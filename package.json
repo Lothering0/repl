@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@colors/colors": "^1.6.0",
-    "dayjs": "^1.11.10"
+    "dayjs": "^1.11.10",
+    "readline-vim": "^0.3.2"
   }
 }
