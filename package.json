@@ -13,5 +13,8 @@
     "@colors/colors": "^1.6.0",
     "dayjs": "^1.11.10",
     "readline-vim": "^0.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6"
   }
 }

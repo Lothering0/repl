@@ -59,6 +59,7 @@ local.setupHistory(path.resolve(__dirname, "./history.txt"), (error) => {
 local.context.dayjs = dayjs;
 
 const vim = readlineVim(local);
+const vimMap = vim.map;
 
 vim.events.on("normal", () => {
   local.setPrompt(getPrompt("normal"));
@@ -68,4 +69,18 @@ vim.events.on("insert", () => {
   local.setPrompt(getPrompt("insert"));
 });
 
+// FIXME: make normal mode when pressing "shift-space"
+// vim.map.insert("meta-space", "esc");
+// vim.map.insert("shift-space", "esc");
+// vim.map.insert("space", "esc");
+// vim.map.insert("ctrl-space", "esc");
+// console.log(vim.map);
+
+/* process.stdin.on("keypress", (ch, key) => {
+  console.log('got "keypress"', ch, key);
+  // if (!key || !key.ctrl || key.name !== 'c') return;
+  // process.stdin.pause();
+}); */
+
 // TODO: https://stackoverflow.com/questions/62323316/how-to-modify-cursor-line-in-node-js-readline
+// make syntax highlighting
