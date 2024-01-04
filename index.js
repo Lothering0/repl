@@ -97,6 +97,7 @@ vim.events.on("insert", () => {
 // vim.map.insert("shift-space", "esc");
 // vim.map.insert("space", "esc");
 vim.map.insert("ctrl-space", "esc");
+vim.map.insert("ctrl-c", "esc");
 // console.log(vim.map);
 
 /* process.stdin.on("keypress", (ch, key) => {
