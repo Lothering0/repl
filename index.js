@@ -9,71 +9,94 @@ const dayjs = require("dayjs");
 require("@colors/colors");
 require("./fp.js");
 
-/** @constant */
-const icons = {
-  js: "",
-  prompt: {
-    insert: ">=>",
-    normal: "<=<",
-  },
-  output: "->",
-  node: "",
-};
+class Item {
+  /**
+   * @param {string} icon
+   * @param {keyof import("@colors/colors").Color} color
+   */
+  constructor(icon, color) {
+    this.icon = icon;
+    this.color = color;
+  }
+
+  /** @returns {typeof this.icon} */
+  get coloredIcon() {
+    return this.icon[this.color];
+  }
+}
 
 /** @constant */
-const colors = {
+const items = {
+  js: new Item("", "yellow"),
   prompt: {
-    insert: "green",
-    normal: "cyan",
+    insert: new Item(">=>", "green"),
+    normal: new Item("<=<", "cyan"),
+  },
+  output: new Item("->", "blue"),
+  node: new Item("", "green"),
+  welcomeBar: {
+    leftCorner: new Item("", "green"),
+    rightCorner: new Item("", "green"),
   },
 };
 
-console.log("");
-const nodeVersion = "".green + (" " + icons.node + "  " + process.version + " ").brightWhite.bgGreen + "".green;
-console.log(nodeVersion + "  " + package.version);
+const logEmptyLine = () => console.log("");
+const logWelcome = () => {
+  const {
+    welcomeBar: { leftCorner, rightCorner },
+  } = items;
+  const nodeVersion = process.version;
+  const content = ` ${items.node.icon}  ${nodeVersion} `.brightWhite.bgGreen;
+  const bar = leftCorner.coloredIcon + content + rightCorner.coloredIcon;
+  console.log(`${bar}  ${package.version}`);
+};
+
+logEmptyLine();
+logWelcome();
 
 /**
- * @param {keyof typeof icons["prompt"]} mode
+ * @param {keyof typeof items["prompt"]} mode
  * @returns {string}
  */
 const getPrompt = (mode) => {
-  const promptColor = colors.prompt[mode];
-  return icons.js.yellow + " " + icons.prompt[mode][promptColor] + " ";
+  const { js, prompt } = items;
+  const promptMode = prompt[mode];
+  return `${js.coloredIcon} ${promptMode.coloredIcon} `;
 };
 
 const prompt = getPrompt("insert");
 
-const local = repl.start({
+const replServer = repl.start({
   prompt,
   useColors: true,
   replMode: repl.REPL_MODE_STRICT,
   writer(output) {
-    return icons.output.cyan + " " + util.inspect(output, { colors: true, depth: 20 }) + "\n";
+    const inspectedOutput = util.inspect(output, { colors: true, depth: 20 });
+    return `${items.output.coloredIcon} ${inspectedOutput}\n`;
   },
 });
 
-local.setupHistory(path.resolve(__dirname, "./history.txt"), (error) => {
+replServer.setupHistory(path.resolve(__dirname, "./history.txt"), (error) => {
   if (error) throw error;
 });
 
-local.context.dayjs = dayjs;
+replServer.context.dayjs = dayjs;
 
-const vim = readlineVim(local);
-const vimMap = vim.map;
+const vim = readlineVim(replServer);
 
 vim.events.on("normal", () => {
-  local.setPrompt(getPrompt("normal"));
+  replServer.setPrompt(getPrompt("normal"));
 });
 
 vim.events.on("insert", () => {
-  local.setPrompt(getPrompt("insert"));
+  replServer.setPrompt(getPrompt("insert"));
 });
 
 // FIXME: make normal mode when pressing "shift-space"
 // vim.map.insert("meta-space", "esc");
 // vim.map.insert("shift-space", "esc");
 // vim.map.insert("space", "esc");
-// vim.map.insert("ctrl-space", "esc");
+vim.map.insert("ctrl-space", "esc");
 // console.log(vim.map);
 
 /* process.stdin.on("keypress", (ch, key) => {
