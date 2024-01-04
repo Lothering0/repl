@@ -32,6 +32,7 @@ const items = {
     insert: new Item(">=>", "green"),
     normal: new Item("<=<", "cyan"),
   },
+  error: new Item("", "red"),
   output: new Item("->", "blue"),
   node: new Item("", "green"),
   welcomeBar: {
@@ -66,14 +67,25 @@ const getPrompt = (mode) => {
 
 const prompt = getPrompt("insert");
 
+const writeOutput = (output) => {
+  const inspectedOutput = util.inspect(output, { colors: true, depth: 20 });
+  return `${items.output.coloredIcon} ${inspectedOutput}\n`;
+};
+
+const writeError = (output) => `${items.error.coloredIcon}  ${output.toString().red}\n\n`;
+
+const isOutputError = (output) => {
+  if (!output?.toString || typeof output !== "object") return false;
+  return new RegExp(/\w*Error:?/).test(output.toString());
+};
+
+const writer = (output) => (isOutputError(output) ? writeError(output) : writeOutput(output));
+
 const replServer = repl.start({
   prompt,
   useColors: true,
   replMode: repl.REPL_MODE_STRICT,
-  writer(output) {
-    const inspectedOutput = util.inspect(output, { colors: true, depth: 20 });
-    return `${items.output.coloredIcon} ${inspectedOutput}\n`;
-  },
+  writer,
 });
 
 replServer.setupHistory(path.resolve(__dirname, "./history.txt"), (error) => {
