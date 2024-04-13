@@ -8,7 +8,7 @@ globalThis.flip = (fn) => (a) => (b) => fn(b)(a);
 globalThis.compose = (fns) => (x) => fns.reduceRight((prev, fn) => fn(prev), x);
 
 // Arrays
-globalThis.list = (x) => [x];
+globalThis.list = (x) => Object.freeze([x]);
 
 globalThis.head = (arr) => arr[0];
 
