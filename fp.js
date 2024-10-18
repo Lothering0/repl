@@ -1,4 +1,8 @@
 // Control
+globalThis.panic = (message) => {
+  throw new Error(message);
+};
+
 globalThis.$ = (fn) => (x) => fn(x);
 
 globalThis.infix = (a) => (fn) => (b) => fn(a)(b);
@@ -7,9 +11,12 @@ globalThis.flip = (fn) => (a) => (b) => fn(b)(a);
 
 globalThis.compose = (fns) => (x) => fns.reduceRight((prev, fn) => fn(prev), x);
 
-// Arrays
-globalThis.list = (x) => Object.freeze([x]);
+globalThis.curry =
+  (fn) =>
+  (...xs) =>
+    fn.bind(null, ...xs);
 
+// Arrays
 globalThis.head = (arr) => arr[0];
 
 globalThis.last = (arr) => arr[arr.length - 1];
@@ -24,9 +31,9 @@ const tailAux = (arr) => (index) => (finalArr) =>
 
 globalThis.tail = (arr) => tailAux(arr)(arr.length - 1)([]);
 
-globalThis.map = (fn) => (arr) => arr.map((item) => fn(item));
+globalThis.map = (fn) => (arr) => arr.length ? [fn(head(arr)), ...map(fn)(tail(arr))] : [];
 
-globalThis.filter = (fn) => (arr) => arr.filter((item) => fn(item));
+globalThis.filter = (fn) => (xs) => xs.length ? [...(fn(head(xs)) ? [head(xs)] : []), ...filter(fn)(tail(xs))] : [];
 
 globalThis.foldl = (fn) => (x) => (arr) => arr.reduce((prev, curr) => fn(prev)(curr), x);
 
@@ -41,6 +48,40 @@ const zipWithAux = (fn) => (arr1) => (arr2) => (index) => (finalArr) =>
         : aux((finalArr.push(fn(arr1[index])(arr2[index])), finalArr)));
 
 globalThis.zipWith = (fn) => (arr1) => (arr2) => zipWithAux(fn)(arr1)(arr2)(0)([]);
+
+globalThis.list = (x) => Object.freeze([x]);
+
+globalThis.List = {
+  unit: list,
+  join: (xs) => (xs.length ? [...head(xs), ...List.join(tail(xs))] : []),
+};
+
+globalThis.guard = (cases) => last(cases.find(([predicate]) => predicate()))();
+
+globalThis.OTHERWISE = true;
+
+globalThis.listN = (x) => (y) =>
+  [
+    x,
+    ...globalThis.guard([
+      [() => x > y, () => listN(x - 1)(y)],
+      [() => x < y, () => listN(x + 1)(y)],
+      [() => OTHERWISE, () => []],
+    ]),
+  ];
+
+// Booleans
+globalThis.not = (x) => !x;
+
+globalThis.equals = (x) => (y) => x === y;
+
+globalThis.more = (x) => (y) => x > y;
+
+globalThis.less = (x) => (y) => x < y;
+
+globalThis.moreOrEquals = (x) => (y) => x >= y;
+
+globalThis.lessOrEquals = (x) => (y) => x <= y;
 
 // Math
 globalThis.add = (a) => (b) => a + b;
